@@ -24,11 +24,24 @@
 For this part, some additional data processing was needed before the pipeline. The following are the steps taken:
 \begin{minted}{python}
   # get data from CSVs
-  train = pd.read_csv('data/exercise1/UNSW_NB15_training-set.csv',index_col='id')
-  test = pd.read_csv('data/exercise1/UNSW_NB15_testing-set.csv',index_col='id')
-  # remove all rows that are not data on 'Normal' or 'Fuzzers' attacks and make a train/test split
-  train_data = train.loc[(train['attack_cat'] == 'Normal') | (train['attack_cat'] == 'Fuzzers')]
-  test_data = test.loc[(test['attack_cat'] == 'Normal') | (test['attack_cat'] == 'Fuzzers')]
+  train = pd.read_csv(
+    'data/exercise1/UNSW_NB15_training-set.csv',
+    index_col='id'
+  )
+  test = pd.read_csv(
+    'data/exercise1/UNSW_NB15_testing-set.csv',
+    index_col='id'
+  )
+  # remove all rows that are not data on 'Normal' or 'Fuzzers'
+  # attacks and make a train/test split
+  train_data = train.loc[
+    (train['attack_cat'] == 'Normal') |
+    (train['attack_cat'] == 'Fuzzers')
+  ]
+  test_data = test.loc[
+    (test['attack_cat'] == 'Normal') | 
+    (test['attack_cat'] == 'Fuzzers')
+  ]
   train_labels = train_data['attack_cat']
   test_labels = test_data['attack_cat']
   # keep only features between 'spkts' and 'is_sm_ips_ports'
@@ -41,24 +54,26 @@ In this part, the code was similar except the train and test CSVs were combined 
   # combine CSVs into one DataFrame
   com = pd.concat([train, test], ignore_index=True)
   ...
-  # after filtering for columns and rows like in Part 1, create train/test split randomly
-  X_train, X_test, y_train, y_test = train_test_split(com_data, com_labels, test_size=0.5)
+  # after filtering for columns and rows like in Part 1,
+  # create train/test split randomly
+  X_train, X_test, y_train, y_test
+    = train_test_split(com_data, com_labels, test_size=0.5)
 \end{minted}
 \subsection*{Questions}
 The inference and results section was similar for both parts, since the process of creating a model, fitting it to the data, and then predicting on test data is
 similar besides the data used to fit the model. The positive label is 'Fuzzers' and the results are as follows:
 \begin{verbatim}
   TRAIN PREDS  part1               part2
-  precision = 0.9963600264725347	0.9744233104006476
-     recall = 0.9934015176509403	0.9851076016692578
-  f1measure = 0.9948785726086238	0.979736328125
-   accuracy = 0.9985602155032279	0.9915050406836907
+  precision = 0.9963600264725347  0.9744233104006476
+     recall = 0.9934015176509403  0.9851076016692578
+  f1measure = 0.9948785726086238  0.979736328125
+   accuracy = 0.9985602155032279  0.9915050406836907
 
   TEST PREDS  part1               part2
-  precision = 0.8503908380294491	0.7202686685104702
-     recall = 0.25725912890453145	0.758004158004158
-  f1measure = 0.3950179438463163	0.7386547811993517
-   accuracy = 0.8068451418095546	0.8899749245176808
+  precision = 0.8503908380294491  0.7202686685104702
+     recall = 0.25725912890453145 0.758004158004158
+  f1measure = 0.3950179438463163  0.7386547811993517
+   accuracy = 0.8068451418095546  0.8899749245176808
 \end{verbatim}
 \begin{description}
   \item[1)] In part 1, the precision and recall of the predicted training labels are about 0.9964 and 0.9934, respectively. On the other hand, the precision
@@ -84,7 +99,10 @@ matrix were used to measure performance:
   from sklearn import metrics
   labels_uniq = csv_data['label'].unique()
   acc = metrics.accuracy_score(y_test, preds)
-  matrix = metrics.confusion_matrix(y_test, preds, labels=labels_uniq)
+  matrix = metrics.confusion_matrix(
+    y_test, preds,
+    labels=labels_uniq
+  )
   mat_df = pd.DataFrame(
       matrix,
       index=['t:'+x for x in labels_uniq],
@@ -93,29 +111,84 @@ matrix were used to measure performance:
 \end{minted}
 Printing these out resulted in the following (p for predicted, t for true):
 \begin{verbatim}
-  Accuracy: 0.808055693684734
+  Accuracy: 0.817503729487817
   Confusion Matrix:
-                  p:AUDIO  p:BROWSING  p:CHAT  p:FILE-TRANSFER  p:MAIL  p:P2P  p:Video  p:VOIP
-  t:AUDIO              263          66       4                2       7      4        3       0
-  t:BROWSING            75         614      36                9      15      1       46       2
-  t:CHAT                11          89      61                2       0      0        5       1
-  t:FILE-TRANSFER        4          20       2              365       8      4       17       1
-  t:MAIL                10          55       2               13      65      0        7       0
-  t:P2P                  8           5       1                2       1    553        7       0
-  t:VIDEO               24          88      10               24      16     11      256       0
-  t:VOIP                10          21       9                4       2      3        5    1073
-
-                  p:VIDEO  p:VOIP  
-  t:AUDIO                3       0  
-  t:BROWSING            46       2  
-  t:CHAT                 5       1  
-  t:FILE-TRANSFER       17       1  
-  t:MAIL                 7       0  
-  t:P2P                  7       0  
-  t:VIDEO              256       0  
-  t:VOIP                 5    1073  
+  [[ 288   71    2    3    2    2    6    3]
+   [  59  646   50    6   14    2   35    5]
+   [   6   84   52    4    0    1    5    2]
+   [   7   27    5  371    5    0   16    1]
+   [   6   42    4   14   55    2    2    1]
+   [   3    9    2    0    0  512    1    1]
+   [  26  103   10   22   16   13  253    0]
+   [   0   16    8    1    1    7    1 1111]]
+  Confusion Matrix with Labels:
+                  p:AUDIO  p:BROWSING  p:CHAT  p:FILE-TRANSFER  
+  t:AUDIO             288          71       2                3
+  t:BROWSING           59         646      50                6
+  t:CHAT                6          84      52                4
+  t:FILE-TRANSFER       7          27       5              371
+  t:MAIL                6          42       4               14
+  t:P2P                 3           9       2                0
+  t:VIDEO              26         103      10               22
+  t:VOIP                0          16       8                1
+                  p:MAIL  p:P2P  p:Video  p:VOIP
+  t:AUDIO              2      2        6       3
+  t:BROWSING          14      2       35       5
+  t:CHAT               0      1        5       2
+  t:FILE-TRANSFER      5      0       16       1
+  t:MAIL              55      2        2       1
+  t:P2P                0    512        1       1
+  t:VIDEO             16     13      253       0
+  t:VOIP               1      7        1    1111
 \end{verbatim}
-
+Then, sorting the features by importance:
+\begin{minted}{python}
+  ft_imps = [
+    ft for ft in zip(
+      data.columns[5:28],
+      model.feature_importances_
+    )
+  ]
+  ft_imps.sort(key=lambda ft: ft[1], reverse=True)
+\end{minted}
+\begin{verbatim}
+  Feature         Importance
+  Flow IAT Min    0.11527062510580362
+  Bwd IAT Min     0.10232280517910446
+  Fwd IAT Min     0.09100448643274058
+  Idle Mean       0.08865546761730136
+  Bwd IAT Std     0.08159359283202991
+  Fwd IAT Mean    0.07670357789533365
+  Bwd IAT Max     0.06202825575499599
+  Fwd IAT Std     0.06135180168000219
+  Bwd IAT Mean    0.05392637364959135
+  Active Max      0.05030235612694543
+  Active Mean     0.04471946295225557
+  Active Min      0.0438926147529209
+  Active Std      0.0428066064735526
+  Flow IAT Max    0.038563394008160654
+  Fwd IAT Max     0.03062073033687629
+  Idle Std        0.0038529394122149645
+  Idle Min        0.0038186252231571143
+  Idle Max        0.0
+\end{verbatim}
+\subsection*{Questions}
+\begin{description}
+  \item[1)] The overall accuracy using the default parameters is about 0.8175, or 81.75\%.
+  \item[2)] The confusion matrix is shown above. The model seems to perform very well for 'VOIP' and 'P2P.' On the other hand, some classes where the
+    model performs poorly are 'CHAT' and 'MAIL.'
+  \item[3)] The top 5 most important features, as shown above, are: Flow IAT Min, Bwd IAT Min, Fwd IAT Min, Idle Mean, and Bwd IAT Std.
+  \item[4)] There are a lot of hyperparameters that can be changed to tune the model and to improve performance. Some of these include: \verb|n_estimators| (number of trees
+    in the forest), \verb|max_depth| (max depth of a tree), and \verb|min_samples_leaf| (minimum number of samples to be considered a leaf). After a few tries of modifying these
+    parameters, the best accuracy obtained was about 0.8329 or 83.29\%, as shown in \\\verb|lab4_exercise2_tuning.ipynb|. However, if the model is extremely overfit to
+    the test data set, then an accuracy of 100\% could be possible, although extremely unlikely.
+  \item[5)] Combining lists of values for several hyperparameters into a dictionary and performing cross validation on the combinations can help automatically tune
+    the hyperparameters. For example, using \\\verb|sklearn.model_selection.GridSearchCV| will return a model with the best performing hyperparameter values. Additionally,
+    using multiple train/test splits can also help automatically tune the hyperparameters. In this case, using \\\verb|sklearn.model_selection.StratifiedKFold| can be
+    helpful, since it also preserves the percentage of samples for each class. K-fold cross validation can then help determine how to split the data for the model to
+    perform the best.
+\end{description}
+\section*{Exercise 3}
 \bibliography{bibliography}
 \bibliographystyle{ieeetr}
 \end{document}
